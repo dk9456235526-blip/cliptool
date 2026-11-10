@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Clip Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400&display=swap"
+    />
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+  <body>
+    <div class="page" id="top">
+      <header class="nav glass" data-auto></header>
+      <main class="main">
+        <section class="hero">
+          <div class="hero__copy">
+            <p class="hero__eyebrow">Video editor · runs in your browser</p>
+            <h1>Clip Studio</h1>
+            <p class="hero__sub">Turn one long video into short clips. Drop a file, pick a mood, and get the best moments cut and named.</p>
+          </div>
+        </section>
+
+        <section class="section" id="editor" data-nav="Editor">
+          <div class="head"><h2>Editor</h2></div>
+          <div class="x-editor">
+            <div class="x-col">
+              <div class="x-panel">
+                <h3>1 · Source video <span class="x-meta" id="meta"></span></h3>
+                <label class="x-drop" id="drop" tabindex="0">
+                  <strong>Drop a video here, or click to choose</strong>
+                  MP4, WebM or MOV · it never leaves your device
+                  <input type="file" id="file" accept="video/*" hidden />
+                </label>
+                <div class="x-stage" id="stage" hidden>
+                  <video id="video" controls playsinline></video>
+                  <div class="x-crop">
+                    <canvas id="crop" width="180" height="320" aria-label="Crop frame preview"></canvas>
+                    <span class="x-note" id="cropLabel">9:16 crop</span>
+                  </div>
+                </div>
+              </div>
+              <div class="x-panel">
+                <h3>Timeline <span class="x-note" id="tlNote">Energy over time · clips highlighted</span></h3>
+                <canvas class="x-timeline" id="timeline" aria-label="Audio energy timeline with clips"></canvas>
+                <div class="x-progress" aria-hidden="true"><i id="bar"></i></div>
+                <p class="x-note" id="status">Load a video to begin.</p>
+              </div>
+            </div>
+
+            <div class="x-col">
+              <div class="x-panel">
+                <h3>2 · Settings</h3>
+                <div class="x-field">
+                  <span>Clip length <b id="lenOut">30s</b></span>
+                  <div class="x-seg" id="presets">
+                    <button class="btn" data-len="15">15s</button><button class="btn x-on" data-len="30">30s</button
+                    ><button class="btn" data-len="45">45s</button><button class="btn" data-len="60">60s</button
+                    ><button class="btn" data-len="90">90s</button>
+                  </div>
+                  <input type="range" id="len" min="5" max="180" value="30" aria-label="Custom clip length" />
+                </div>
+                <div class="x-field">
+                  <span>Number of clips <b id="countOut">5</b></span>
+                  <input type="range" id="count" min="1" max="20" value="5" aria-label="Number of clips" />
+                </div>
+                <div class="x-field">
+                  <span>Aspect ratio</span>
+                  <div class="x-seg" id="aspects">
+                    <button class="btn x-on" data-ar="9:16">9:16</button><button class="btn" data-ar="1:1">1:1</button
+                    ><button class="btn" data-ar="16:9">16:9</button>
+                  </div>
+                </div>
+                <div class="x-field">
+                  <span>Crop position <b id="cropOut">50%</b></span>
+                  <input type="range" id="cropPos" min="0" max="100" value="50" aria-label="Horizontal crop position" />
+                </div>
+              </div>
+              <div class="x-panel">
+                <h3>3 · Best moments</h3>
+                <div class="x-row">
+                  <select id="mode" aria-label="Mode">
+                    <option value="funny">😂 Funny</option><option value="hype">🔥 Hype</option>
+                    <option value="emotional">🥹 Emotional</option><option value="talky">💬 Talky</option>
+                    <option value="calm">🌿 Calm</option><option value="even">📏 Even split</option>
+                  </select>
+                  <button class="btn x-on" id="analyze" disabled>Find clips</button>
+                </div>
+                <div class="x-row"><button class="btn" id="addClip" disabled>+ Add clip at playhead</button></div>
+              </div>
+              <div class="x-panel">
+                <h3>4 · Naming</h3>
+                <div class="x-row">
+                  <select id="pattern" aria-label="Name pattern">
+                    <option value="Part {n}">Part {n}</option>
+                    <option value="{video} – Part {n}">{video} – Part {n}</option>
+                    <option value="Ep {n}: {mode}">Ep {n}: {mode}</option>
+                    <option value="custom">Custom prefix…</option>
+                  </select>
+                  <input type="text" id="prefix" placeholder="Prefix, e.g. Highlight" aria-label="Custom prefix" hidden />
+                </div>
+                <div class="x-row"><button class="btn" id="applyNames">Apply to all</button></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="clips" data-nav="Clips">
+          <div class="head">
+            <h2>Your clips</h2>
+            <p class="head__sub">Edit titles and times, preview a clip on its own, or remove it.</p>
+          </div>
+          <div class="x-editor">
+            <div class="x-panel">
+              <h3>
+                <span id="clipCount">No clips yet</span>
+                <select id="sort" aria-label="Sort clips" style="width: auto">
+                  <option value="time">Sort by time</option><option value="score">Sort by score</option>
+                </select>
+                <button class="btn" id="renderAll" type="button" disabled>Render all</button>
+              </h3>
+              <div class="x-clips" id="list"></div>
+            </div>
+            <div class="x-panel" id="captions-panel">
+              <h3>Captions <span class="x-note" id="capFor">Select a clip</span></h3>
+              <fieldset class="x-fs" id="capBody">
+                <textarea id="capText" rows="5" aria-label="Caption lines" placeholder="0:00 First line&#10;0:03 Second line&#10;Lines without a time are spread evenly"></textarea>
+                <div class="x-row">
+                  <label class="x-check"><input type="checkbox" id="capTitle" /> Title for first 3s</label>
+                  <label class="x-check"><input type="checkbox" id="capBadge" /> Part badge</label>
+                </div>
+                <div class="x-field"><span>Style</span><div class="x-tiles" id="capTiles"></div></div>
+                <div class="x-row">
+                  <select id="capFont" aria-label="Font"></select>
+                  <input type="number" id="capSize" min="20" max="160" step="2" aria-label="Font size" title="Size (px at 1080 wide)" />
+                </div>
+                <div class="x-row x-colors">
+                  <label>Text<input type="color" id="capColor" /></label>
+                  <label>Outline<input type="color" id="capOutline" /></label>
+                  <label>Highlight<input type="color" id="capHi" /></label>
+                </div>
+                <div class="x-field">
+                  <span>Position</span>
+                  <div class="x-seg" id="capPos"><button type="button" class="btn" data-pos="top">Top</button><button type="button" class="btn" data-pos="middle">Middle</button><button type="button" class="btn" data-pos="bottom">Bottom</button></div>
+                </div>
+                <div class="x-row">
+                  <label class="x-check"><input type="checkbox" id="capUpper" /> Uppercase</label>
+                  <label class="x-field"><span>Max words per line</span><input type="number" id="capWords" min="1" max="12" /></label>
+                </div>
+                <div class="x-row"><button type="button" class="btn" id="capAll">Apply style to all clips</button></div>
+              </fieldset>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="how" data-nav="How it works">
+          <div class="head">
+            <h2>Four steps from long video to short clips.</h2>
+            <p class="head__sub">Everything happens on your device. Your video is never uploaded anywhere.</p>
+          </div>
+          <div class="steps">
+            <article class="step">
+              <div class="step__intro"><p class="step__num">01</p><p class="step__eyebrow">Upload</p></div>
+              <div><h3>Drop in a video</h3><p>The browser opens the file locally and reads its length and resolution.</p></div>
+            </article>
+            <article class="step">
+              <div class="step__intro"><p class="step__num">02</p><p class="step__eyebrow">Set up</p></div>
+              <div><h3>Choose length, count and frame</h3><p>Pick a clip length, how many clips, and a 9:16, 1:1 or 16:9 crop.</p></div>
+            </article>
+            <article class="step">
+              <div class="step__intro"><p class="step__num">03</p><p class="step__eyebrow">Analyze</p></div>
+              <div><h3>Find the best moments</h3><p>The audio is scored every half second for loudness and spikes, then the top non-overlapping windows are picked and snapped to quiet points.</p></div>
+            </article>
+            <article class="step">
+              <div class="step__intro"><p class="step__num">04</p><p class="step__eyebrow">Refine</p></div>
+              <div><h3>Name, trim and preview</h3><p>Rename clips in bulk, adjust start and end, add your own, and preview each one.</p></div>
+            </article>
+          </div>
+          <p class="fineprint">No uploads, no accounts, no storage: close the tab and it is gone.</p>
+        </section>
+      </main>
+      <footer class="foot">
+        <p>Clip Studio runs entirely in your browser.</p>
+        <nav aria-label="Back to sections" data-auto></nav>
+        <a class="badge" href="https://hark.com/" target="_blank" rel="noopener"><span class="hark-mark"></span><span>built by hark</span></a>
+      </footer>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
